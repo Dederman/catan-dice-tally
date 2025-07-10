@@ -1,17 +1,17 @@
-
 import { useState, useEffect, useCallback } from 'react';
 
 export const useTimers = (sessionActive: boolean) => {
   const [sessionTime, setSessionTime] = useState(0);
   const [rollIntervalTime, setRollIntervalTime] = useState(0);
   const [autoRollActive, setAutoRollActive] = useState(false);
-  const [autoRollInterval, setAutoRollInterval] = useState(2); // minutes
+  // ИЗМЕНЕНИЕ: Default 120 СЕКУНД (было 2 минуты, теперь явно секунды)
+  const [autoRollInterval, setAutoRollInterval] = useState(120); 
 
-  // Session timer
+  // Session timer and roll interval timer
   useEffect(() => {
     if (!sessionActive) {
-      setSessionTime(0);
-      setRollIntervalTime(0);
+      setSessionTime(0); // Сбрасываем время сессии при её остановке
+      setRollIntervalTime(0); // Сбрасываем интервал ролла при её остановке
       return;
     }
 

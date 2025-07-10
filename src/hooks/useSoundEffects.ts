@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 
 export const useSoundEffects = () => {
@@ -7,12 +6,16 @@ export const useSoundEffects = () => {
   const playRollSound = useCallback((total: number) => {
     if (muted) return;
 
-    // Use Web Speech API to announce the roll
     if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(total.toString());
+      const words = ['Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
+      // ИЗМЕНЕНИЕ: Используем слова вместо просто числа
+      const utterance = new SpeechSynthesisUtterance(words[total - 2]); 
       utterance.rate = 1.2;
       utterance.volume = 0.7;
-      speechSynthesis.speak(utterance);
+      
+      // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Останавливаем предыдущую речь перед новой
+      window.speechSynthesis.cancel(); 
+      window.speechSynthesis.speak(utterance);
     }
   }, [muted]);
 

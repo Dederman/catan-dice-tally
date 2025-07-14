@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -43,8 +44,7 @@ const Index = () => {
   const { muted, setMuted, playRollSound } = useSoundEffects();
   const { saveSession, getSavedSessions } = useSessionStorage();
 
-  // ИНИЦИАЛИЗАЦИЯ: Кости всегда показывают что-то
-  const [lastRoll, setLastRoll] = useState<{ dice1: number; dice2: number; total: number }>({ dice1: 1, dice2: 6, total: 7 });
+  const [lastRoll, setLastRoll] = useState<{ dice1: number; dice2: number; total: number } | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [showRandomInfo, setShowRandomInfo] = useState(false);
 
@@ -54,15 +54,15 @@ const Index = () => {
 
     const interval = setInterval(() => {
       handleRoll();
-    }, autoRollInterval * 1000);
+    }, autoRollInterval * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [autoRollActive, sessionActive, autoRollInterval, handleRoll]);
+  }, [autoRollActive, sessionActive, autoRollInterval]);
 
-  // Теперь можно кидать кости и вне сессии, но они не пойдут в статистику
   const handleRoll = useCallback(() => {
-    // rollDice теперь сам решает, записывать ли в статистику на основе sessionActive
-    const result = rollDice(sessionActive); 
+    if (!sessionActive) return;
+    
+    const result = rollDice();
     setLastRoll(result);
     resetRollTimer();
     
@@ -89,15 +89,11 @@ const Index = () => {
       });
     }
     stopSession();
-    // lastRoll теперь НЕ обнуляем, чтобы кости оставались на экране
+    setLastRoll(null);
     toast({
       title: "Session Ended",
       description: "Session data has been saved.",
     });
-  };
-
-  const handleRandomTypeChange = (value: string) => {
-    setRandomType(value as 'standard' | 'uniform' | 'visual' | 'crypto'); // Добавляем 'crypto' в тип
   };
 
   const formatTime = (seconds: number) => {
@@ -146,7 +142,7 @@ const Index = () => {
               </div>
             </div>
             
-            {sessionActive && ( // Таймер сессии показываем только когда сессия активна
+            {sessionActive && (
               <div className="text-center">
                 <div className="text-2xl font-bold text-gray-800">
                   {formatTime(sessionTime)}
@@ -158,119 +154,129 @@ const Index = () => {
         </Card>
 
         {/* Zone 2 - Live Statistics */}
-        {/* ИЗМЕНЕНИЕ: Убираем sessionActive условие */}
-        <Card>
-          <CardContent className="p-4 space-y-4">
-            <StatisticsChart rollStats={rollStats} />
-            
-            <div className="space-y-3">
-              <div className="text-center text-lg font-semibold">
-                Total Rolls: {rollStats.totalRolls}
-              </div>
+        {sessionActive && (
+          <Card>
+            <CardContent className="p-4 space-y-4">
+              <StatisticsChart rollStats={rollStats} />
               
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Players:</span>
-                <Select value={playerCount.toString()} onValueChange={(value) => setPlayerCount(parseInt(value))}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Random Type:</span>
-                <div className="flex items-center space-x-2">
-                  <Select value={randomType} onValueChange={handleRandomTypeChange}>
-                    <SelectTrigger className="w-32">
+              <div className="space-y-3">
+                <div className="text-center text-lg font-semibold">
+                  Total Rolls: {rollStats.totalRolls}
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Players:</span>
+                  <Select value={playerCount.toString()} onValueChange={(value) => setPlayerCount(parseInt(value))}>
+                    <SelectTrigger className="w-20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="standard">Standard Dice</SelectItem>
-                      <SelectItem value="uniform">Uniform</SelectItem>
-                      <SelectItem value="visual">Visual Fair</SelectItem>
-                      <SelectItem value="crypto">Crypto Random</SelectItem>
+                      {[2, 3, 4, 5, 6, 7, 8, 9].map(num => (
+                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  
-                  <Dialog open={showRandomInfo} onOpenChange={setShowRandomInfo}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Info className="w-4 h-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-sm">
-                      <DialogHeader>
-                        <DialogTitle>Random Type Information</DialogTitle>
-                      </DialogHeader>
-                      <RandomTypeInfo />
-                    </DialogContent>
-                  </Dialog>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Random Type:</span>
+                  <div className="flex items-center space-x-2">
+                    <Select value={randomType} onValueChange={setRandomType}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard Dice</SelectItem>
+                        <SelectItem value="uniform">Uniform</SelectItem>
+                        <SelectItem value="visual">Visual Fair</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Dialog open={showRandomInfo} onOpenChange={setShowRandomInfo}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Info className="w-4 h-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-sm">
+                        <DialogHeader>
+                          <DialogTitle>Random Type Information</DialogTitle>
+                        </DialogHeader>
+                        <RandomTypeInfo />
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Zone 3 - Dice & Roll Controls */}
-        {/* ИЗМЕНЕНИЕ: Убираем sessionActive условие */}
-        <Card>
-          <CardContent className="p-6 space-y-4">
-            <div className="flex justify-center">
-              {/* Кости всегда отображаются благодаря начальному lastRoll */}
-              <DiceDisplay dice1={lastRoll.dice1} dice2={lastRoll.dice2} />
-            </div>
-            
-            <div className="text-center space-y-2">
-              <Button 
-                onClick={handleRoll} 
-                size="lg" 
-                className="bg-blue-500 hover:bg-blue-600 rounded-full w-16 h-16"
-              >
-                <RotateCw className="w-6 h-6" />
-              </Button>
+        {sessionActive && (
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <div className="flex justify-center">
+                {lastRoll ? (
+                  <DiceDisplay dice1={lastRoll.dice1} dice2={lastRoll.dice2} />
+                ) : (
+                  <div className="flex space-x-4">
+                    <div className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                      <Dice1 className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <div className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                      <Dice1 className="w-8 h-8 text-gray-400" />
+                    </div>
+                  </div>
+                )}
+              </div>
               
-              {/* "You rolled" текст показываем всегда, но "Current Player" только в сессии */}
-              {lastRoll && (
-                <div className="space-y-1">
-                  <div className="text-xl font-bold">You rolled: {lastRoll.total}</div>
-                  {sessionActive && ( // current player только если сессия активна
+              <div className="text-center space-y-2">
+                <Button 
+                  onClick={handleRoll} 
+                  size="lg" 
+                  className="bg-blue-500 hover:bg-blue-600 rounded-full w-16 h-16"
+                >
+                  <RotateCw className="w-6 h-6" />
+                </Button>
+                
+                {lastRoll && (
+                  <div className="space-y-1">
+                    <div className="text-xl font-bold">You rolled: {lastRoll.total}</div>
                     <div className="text-sm text-gray-600">Current Player: Player {currentPlayer}</div>
-                  )}
-                </div>
-              )}
-            </div>
-            
-            <div className="text-center">
-              <div className="text-sm text-gray-500">
-                {autoRollActive ? `Next roll in: ${formatTime(Math.max(0, autoRollInterval - rollIntervalTime))}` : `Time since last roll: ${formatTime(rollIntervalTime)}`}
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Auto-Roll:</span>
-                <Switch checked={autoRollActive} onCheckedChange={setAutoRollActive} />
+                  </div>
+                )}
               </div>
               
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Interval (seconds):</span>
-                <Input
-                  type="number"
-                  min="1"
-                  max="3600"
-                  value={autoRollInterval}
-                  onChange={(e) => setAutoRollInterval(Math.max(1, Math.min(3600, parseInt(e.target.value) || 120)))}
-                  className="w-20"
-                />
+              <div className="text-center">
+                <div className="text-sm text-gray-500">
+                  {autoRollActive ? `Next roll in: ${formatTime(Math.max(0, autoRollInterval * 60 - rollIntervalTime))}` : `Time since last roll: ${formatTime(rollIntervalTime)}`}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Auto-Roll:</span>
+                  <Switch checked={autoRollActive} onCheckedChange={setAutoRollActive} />
+                </div>
+                
+                {autoRollActive && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Interval (minutes):</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      max="60"
+                      value={autoRollInterval}
+                      onChange={(e) => setAutoRollInterval(Math.max(1, Math.min(60, parseInt(e.target.value) || 2)))}
+                      className="w-20"
+                    />
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

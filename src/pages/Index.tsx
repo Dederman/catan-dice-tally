@@ -54,7 +54,7 @@ const Index = () => {
 
     const interval = setInterval(() => {
       handleRoll();
-    }, autoRollInterval * 60 * 1000);
+    }, autoRollInterval * 1000);
 
     return () => clearInterval(interval);
   }, [autoRollActive, sessionActive, autoRollInterval]);
@@ -94,6 +94,10 @@ const Index = () => {
       title: "Session Ended",
       description: "Session data has been saved.",
     });
+  };
+
+  const handleRandomTypeChange = (value: string) => {
+    setRandomType(value as 'standard' | 'uniform' | 'visual');
   };
 
   const formatTime = (seconds: number) => {
@@ -181,7 +185,7 @@ const Index = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Random Type:</span>
                   <div className="flex items-center space-x-2">
-                    <Select value={randomType} onValueChange={setRandomType}>
+                    <Select value={randomType} onValueChange={handleRandomTypeChange}>
                       <SelectTrigger className="w-32">
                         <SelectValue />
                       </SelectTrigger>
@@ -250,7 +254,7 @@ const Index = () => {
               
               <div className="text-center">
                 <div className="text-sm text-gray-500">
-                  {autoRollActive ? `Next roll in: ${formatTime(Math.max(0, autoRollInterval * 60 - rollIntervalTime))}` : `Time since last roll: ${formatTime(rollIntervalTime)}`}
+                  {autoRollActive ? `Next roll in: ${formatTime(Math.max(0, autoRollInterval - rollIntervalTime))}` : `Time since last roll: ${formatTime(rollIntervalTime)}`}
                 </div>
               </div>
               
@@ -260,19 +264,17 @@ const Index = () => {
                   <Switch checked={autoRollActive} onCheckedChange={setAutoRollActive} />
                 </div>
                 
-                {autoRollActive && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Interval (minutes):</span>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="60"
-                      value={autoRollInterval}
-                      onChange={(e) => setAutoRollInterval(Math.max(1, Math.min(60, parseInt(e.target.value) || 2)))}
-                      className="w-20"
-                    />
-                  </div>
-                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Interval (seconds):</span>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="3600"
+                    value={autoRollInterval}
+                    onChange={(e) => setAutoRollInterval(Math.max(1, Math.min(3600, parseInt(e.target.value) || 120)))}
+                    className="w-20"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

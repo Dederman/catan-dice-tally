@@ -9,6 +9,7 @@ import { DiceDisplay } from "@/components/DiceDisplay";
 import { StatisticsChart } from "@/components/StatisticsChart";
 import { SessionHistory } from "@/components/SessionHistory";
 import { RandomTypeInfo } from "@/components/RandomTypeInfo";
+import { PrivacyPolicy } from "@/components/PrivacyPolicy";
 
 import { useSessionStorage } from "@/hooks/useSessionStorage"; 
 import { useDiceRoller } from "@/hooks/useDiceRoller";
@@ -50,6 +51,7 @@ const Index = () => {
 
   const [showHistory, setShowHistory] = useState(false);
   const [showRandomInfo, setShowRandomInfo] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [historySessions, setHistorySessions] = useState(() => getSavedSessions());
 
   const handleRoll = useCallback((isSessionMode: boolean) => {
@@ -274,6 +276,30 @@ const Index = () => {
             </div>
             <div className="flex-1 overflow-auto p-6 text-slate-600">
               <RandomTypeInfo />
+              <div className="mt-6 border-t border-slate-200 pt-4">
+                <Button
+                  variant="link"
+                  className="h-auto px-0 text-sm font-semibold text-slate-600"
+                  onClick={() => setShowPrivacyPolicy(true)}
+                >
+                  Privacy Policy
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPrivacyPolicy && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setShowPrivacyPolicy(false)} />
+          <div className="relative bg-white w-full max-w-sm max-h-[70vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border-4 border-slate-100">
+            <div className="flex justify-between items-center p-6 border-b shrink-0 bg-slate-50">
+              <h2 className="text-xl font-black uppercase italic text-slate-700">Privacy Policy</h2>
+              <Button variant="ghost" size="icon" onClick={() => setShowPrivacyPolicy(false)}><X size={28}/></Button>
+            </div>
+            <div className="flex-1 overflow-auto p-6 text-slate-600">
+              <PrivacyPolicy />
             </div>
           </div>
         </div>

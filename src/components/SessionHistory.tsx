@@ -34,8 +34,14 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ sessions }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString();
+  const formatDateTime = (timestamp: number) => {
+    return new Date(timestamp).toLocaleString([], {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   if (sessions.length === 0) {
@@ -58,7 +64,7 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ sessions }) => {
         <Card key={session.id}>
           <CardContent className="p-3 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="font-medium text-sm">{formatDate(session.timestamp)}</span>
+              <span className="font-medium text-sm">{formatDateTime(session.timestamp)}</span>
               <span className="text-xs text-gray-500">{formatRandomType(session.randomType)}</span>
             </div>
             
@@ -74,6 +80,33 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ sessions }) => {
               <div>
                 <div className="text-gray-500">Players</div>
                 <div className="font-medium">{session.playerCount}</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-2xl bg-slate-50 px-3 py-2 text-xs">
+              <div>
+                <div className="text-gray-500">Undo Count</div>
+                <div className="font-medium">{session.undoCount}</div>
+              </div>
+              <div>
+                <div className="text-gray-500">Auto Roll</div>
+                <div className="font-medium">
+                  {session.autoRollEnabled ? `On (${session.autoRollIntervalSeconds}s)` : 'Off'}
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-500">Random Changed</div>
+                <div className="font-medium">{session.randomTypeChanged ? 'Yes' : 'No'}</div>
+              </div>
+              <div>
+                <div className="text-gray-500">7s By Player</div>
+                <div className="font-medium">
+                  {session.sevensByPlayer.some((count) => count > 0)
+                    ? session.sevensByPlayer
+                        .map((count, index) => `P${index + 1}: ${count}`)
+                        .join('  ')
+                    : 'None'}
+                </div>
               </div>
             </div>
             

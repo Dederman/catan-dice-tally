@@ -14,6 +14,7 @@ type HistoryRoll = RollResult & {
 type RollStats = {
   totalRolls: number;
   distribution: number[];
+  sevensByPlayer: number[];
 };
 
 const DICE_PAIRS: ReadonlyArray<readonly [number, number]> = Array.from(
@@ -43,6 +44,7 @@ const WITHOUT_SEVEN_TOTALS: ReadonlyArray<readonly [number, number]> = WEIGHTED_
 const createEmptyStats = (): RollStats => ({
   totalRolls: 0,
   distribution: Array(11).fill(0),
+  sevensByPlayer: [],
 });
 
 const toRollResult = (dice1: number, dice2: number): RollResult => ({
@@ -145,16 +147,22 @@ export const useDiceRoller = (
 
   const updateStats = useCallback((currentHistory: HistoryRoll[]) => {
     const distribution = Array(11).fill(0);
+    const sevensByPlayer = Array(playerCount).fill(0);
 
     currentHistory.forEach((roll) => {
       distribution[roll.total - 2] += 1;
+
+      if (roll.total === 7 && roll.player >= 1 && roll.player <= playerCount) {
+        sevensByPlayer[roll.player - 1] += 1;
+      }
     });
 
     setRollStats({
       totalRolls: currentHistory.length,
       distribution,
+      sevensByPlayer,
     });
-  }, []);
+  }, [playerCount]);
 
   const generateRoll = useCallback(() => {
     return rollByType(randomType, visualPoolRef);

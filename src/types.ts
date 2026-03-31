@@ -14,4 +14,5 @@ export type SavedSession = {
   playerCount: number;
   randomType: RandomType;
   distribution: number[];
+  sevensByPlayer: number[];
 };

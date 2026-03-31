@@ -6,6 +6,7 @@ type SessionPayload = {
   rollStats: {
     totalRolls: number;
     distribution: number[];
+    sevensByPlayer: number[];
   };
   playerCount: number;
   randomType: RandomType;
@@ -32,6 +33,7 @@ export const useSessionStorage = () => {
         playerCount: sessionData.playerCount,
         randomType: sessionData.randomType,
         distribution: [...sessionData.rollStats.distribution],
+        sevensByPlayer: [...sessionData.rollStats.sevensByPlayer],
       };
 
       const existingSessions = getSavedSessions();

@@ -217,7 +217,12 @@ const Index = () => {
                   <ChevronLeft size={40}/>
                 </Button>
 
-                <div className="text-4xl font-black text-orange-500 w-12 text-center">{currentPlayer}</div>
+                <div className="flex flex-col items-center justify-center leading-none">
+                  <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase mb-1">
+                    Next Player
+                  </span>
+                  <div className="text-4xl font-black text-orange-500 w-12 text-center">{currentPlayer}</div>
+                </div>
 
                 <Button 
                   variant="ghost" 

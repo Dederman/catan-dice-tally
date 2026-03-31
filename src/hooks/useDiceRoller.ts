@@ -143,6 +143,7 @@ export const useDiceRoller = (
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [currentPlayer, setCurrentPlayer] = useState(1);
   const [rollStats, setRollStats] = useState<RollStats>(createEmptyStats);
+  const [undoCount, setUndoCount] = useState(0);
   const visualPoolRef = useRef<[number, number][]>([]);
 
   const updateStats = useCallback((currentHistory: HistoryRoll[]) => {
@@ -196,6 +197,7 @@ export const useDiceRoller = (
     setCurrentPlayer(rollToUndo.player);
     setCurrentIndex(newIndex);
     updateStats(history.slice(0, newIndex + 1));
+    setUndoCount((prev) => prev + 1);
     resetRollTimer();
 
     return newIndex >= 0 ? history[newIndex] : null;
@@ -222,6 +224,7 @@ export const useDiceRoller = (
     setCurrentIndex(-1);
     setCurrentPlayer(1);
     setRollStats(createEmptyStats());
+    setUndoCount(0);
     visualPoolRef.current = [];
     resetRollTimer();
   }, [resetRollTimer]);
@@ -234,6 +237,7 @@ export const useDiceRoller = (
     startSession,
     undo,
     redo,
+    undoCount,
     canUndo: currentIndex >= 0,
     canRedo: currentIndex < history.length - 1,
   };

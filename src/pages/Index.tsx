@@ -23,6 +23,7 @@ const Index = () => {
   const [sessionActive, setSessionActive] = useState(false); 
   const [playerCount, setPlayerCount] = useState(4); 
   const [randomType, setRandomType] = useState<RandomType>('standard'); 
+  const [sessionStartedRandomType, setSessionStartedRandomType] = useState<RandomType>('standard');
 
   const { sessionTime, rollIntervalTime, resetRollTimer } = useTimers(sessionActive, localAutoRollInterval, localAutoRollActive);
   const { muted, setMuted, playRollSound, stopAllSounds, stopCountdown, playCountdownSound } = useSoundEffects(); 
@@ -36,6 +37,7 @@ const Index = () => {
     startSession, 
     undo, 
     redo, 
+    undoCount,
     canUndo, 
     canRedo 
   } = useDiceRoller(resetRollTimer, playerCount, randomType);
@@ -61,7 +63,16 @@ const Index = () => {
 
   const handleStopSession = () => {
     if (rollStats && rollStats.totalRolls > 0) {
-      saveSession({ sessionTime, rollStats, playerCount, randomType });
+      saveSession({
+        sessionTime,
+        rollStats,
+        playerCount,
+        randomType,
+        undoCount,
+        autoRollEnabled: localAutoRollActive,
+        autoRollIntervalSeconds: localAutoRollInterval,
+        randomTypeChanged: sessionStartedRandomType !== randomType,
+      });
       setHistorySessions(getSavedSessions());
     }
     setSessionActive(false);
@@ -162,7 +173,11 @@ const Index = () => {
           </div>
           
           <Button 
-            onClick={sessionActive ? handleStopSession : () => {startSession(); setSessionActive(true);}}
+            onClick={sessionActive ? handleStopSession : () => {
+              setSessionStartedRandomType(randomType);
+              startSession();
+              setSessionActive(true);
+            }}
             className={`h-10 px-4 rounded-xl font-black text-[12px] text-white shadow-md border-0 transition-all flex items-center gap-3 ${
               sessionActive 
                 ? 'bg-red-500 hover:bg-red-600 active:bg-red-700' 

@@ -10,6 +10,10 @@ type SessionPayload = {
   };
   playerCount: number;
   randomType: RandomType;
+  undoCount: number;
+  autoRollEnabled: boolean;
+  autoRollIntervalSeconds: number;
+  randomTypeChanged: boolean;
 };
 
 export const useSessionStorage = () => {
@@ -34,6 +38,10 @@ export const useSessionStorage = () => {
         randomType: sessionData.randomType,
         distribution: [...sessionData.rollStats.distribution],
         sevensByPlayer: [...sessionData.rollStats.sevensByPlayer],
+        undoCount: sessionData.undoCount,
+        autoRollEnabled: sessionData.autoRollEnabled,
+        autoRollIntervalSeconds: sessionData.autoRollIntervalSeconds,
+        randomTypeChanged: sessionData.randomTypeChanged,
       };
 
       const existingSessions = getSavedSessions();

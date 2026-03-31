@@ -15,4 +15,8 @@ export type SavedSession = {
   randomType: RandomType;
   distribution: number[];
   sevensByPlayer: number[];
+  undoCount: number;
+  autoRollEnabled: boolean;
+  autoRollIntervalSeconds: number;
+  randomTypeChanged: boolean;
 };

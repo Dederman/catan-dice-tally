@@ -1,55 +1,52 @@
 import { useCallback } from 'react';
+import type { RandomType, SavedSession } from '@/types';
 
-interface SessionData {
-  id: string;
-  timestamp: number;
-  duration: number;
-  totalRolls: number;
+type SessionPayload = {
+  sessionTime: number;
+  rollStats: {
+    totalRolls: number;
+    distribution: number[];
+  };
   playerCount: number;
-  randomType: string;
-  rollStats: { [key: number]: number };
-}
+  randomType: RandomType;
+};
 
-export const useSessionStorage = () => { // Название хука остается useSessionStorage, но функционал будет useLocalStorage
-  const saveSession = useCallback((sessionData: {
-    sessionTime: number;
-    rollStats: { [key: number]: number; totalRolls: number };
-    playerCount: number;
-    randomType: string;
-  }) => {
-    const session: SessionData = {
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      duration: sessionData.sessionTime,
-      totalRolls: sessionData.rollStats.totalRolls,
-      playerCount: sessionData.playerCount,
-      randomType: sessionData.randomType,
-      rollStats: { ...sessionData.rollStats }
-    };
-
-    const existingSessions = getSavedSessions();
-    const updatedSessions = [...existingSessions, session];
-    
-    // Keep only last 50 sessions
-    if (updatedSessions.length > 50) {
-      updatedSessions.splice(0, updatedSessions.length - 50);
-    }
-    
-    localStorage.setItem('catan-dice-sessions', JSON.stringify(updatedSessions));
-  }, []);
-
-  const getSavedSessions = useCallback((): SessionData[] => {
+export const useSessionStorage = () => {
+  const getSavedSessions = useCallback((): SavedSession[] => {
     try {
       const stored = localStorage.getItem('catan-dice-sessions');
-      return stored ? JSON.parse(stored) : [];
+      return stored ? (JSON.parse(stored) as SavedSession[]) : [];
     } catch {
-      console.error("Failed to parse sessions from localStorage. Returning empty array.");
+      console.error('Failed to parse sessions from localStorage. Returning empty array.');
       return [];
     }
   }, []);
 
-  // Новая функция для сохранения отдельных настроек в localStorage
-  const saveSetting = useCallback(<T>(key: string, value: T) => {
+  const saveSession = useCallback(
+    (sessionData: SessionPayload) => {
+      const session: SavedSession = {
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        duration: sessionData.sessionTime,
+        totalRolls: sessionData.rollStats.totalRolls,
+        playerCount: sessionData.playerCount,
+        randomType: sessionData.randomType,
+        distribution: [...sessionData.rollStats.distribution],
+      };
+
+      const existingSessions = getSavedSessions();
+      const updatedSessions = [...existingSessions, session];
+
+      if (updatedSessions.length > 50) {
+        updatedSessions.splice(0, updatedSessions.length - 50);
+      }
+
+      localStorage.setItem('catan-dice-sessions', JSON.stringify(updatedSessions));
+    },
+    [getSavedSessions],
+  );
+
+  const saveSetting = useCallback(<T,>(key: string, value: T) => {
     try {
       localStorage.setItem(`catan-dice-setting-${key}`, JSON.stringify(value));
     } catch (error) {
@@ -57,8 +54,7 @@ export const useSessionStorage = () => { // Название хука остае
     }
   }, []);
 
-  // Новая функция для загрузки отдельных настроек из localStorage
-  const loadSetting = useCallback(<T>(key: string, defaultValue: T): T => {
+  const loadSetting = useCallback(<T,>(key: string, defaultValue: T): T => {
     try {
       const stored = localStorage.getItem(`catan-dice-setting-${key}`);
       return stored ? (JSON.parse(stored) as T) : defaultValue;
@@ -68,10 +64,15 @@ export const useSessionStorage = () => { // Название хука остае
     }
   }, []);
 
+  const clearSavedSessions = useCallback(() => {
+    localStorage.removeItem('catan-dice-sessions');
+  }, []);
+
   return {
     saveSession,
     getSavedSessions,
-    saveSetting,   // Добавляем новую функцию
-    loadSetting    // Добавляем новую функцию
+    clearSavedSessions,
+    saveSetting,
+    loadSetting,
   };
 };

@@ -1,20 +1,31 @@
 
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-
-interface SessionData {
-  id: string;
-  timestamp: number;
-  duration: number;
-  totalRolls: number;
-  playerCount: number;
-  randomType: string;
-  rollStats: { [key: number]: number };
-}
+import { History } from 'lucide-react';
+import type { SavedSession } from '@/types';
 
 interface SessionHistoryProps {
-  sessions: SessionData[];
+  sessions: SavedSession[];
 }
+
+const formatRandomType = (randomType: SavedSession['randomType']) => {
+  switch (randomType) {
+    case 'standard':
+      return 'Standard';
+    case 'weighted':
+      return 'Weighted';
+    case 'crypto':
+      return 'Crypto';
+    case 'visual':
+      return 'Visual Fair';
+    case 'uniform':
+      return 'Uniform';
+    case 'without7':
+      return 'Without 7';
+    default:
+      return randomType;
+  }
+};
 
 export const SessionHistory: React.FC<SessionHistoryProps> = ({ sessions }) => {
   const formatTime = (seconds: number) => {
@@ -29,8 +40,14 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ sessions }) => {
 
   if (sessions.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8">
-        No sessions recorded yet.
+      <div className="flex min-h-52 flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm border border-slate-200">
+          <History className="h-6 w-6 text-slate-400" />
+        </div>
+        <div className="text-base font-semibold text-slate-700">No sessions yet</div>
+        <div className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
+          Finish a session and it will appear here with duration, rolls, players, and distribution stats.
+        </div>
       </div>
     );
   }
@@ -42,7 +59,7 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ sessions }) => {
           <CardContent className="p-3 space-y-2">
             <div className="flex justify-between items-center">
               <span className="font-medium text-sm">{formatDate(session.timestamp)}</span>
-              <span className="text-xs text-gray-500 capitalize">{session.randomType}</span>
+              <span className="text-xs text-gray-500">{formatRandomType(session.randomType)}</span>
             </div>
             
             <div className="grid grid-cols-3 gap-2 text-xs">
@@ -61,10 +78,10 @@ export const SessionHistory: React.FC<SessionHistoryProps> = ({ sessions }) => {
             </div>
             
             <div className="flex justify-between text-xs">
-              {[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(num => (
-                <div key={num} className="text-center">
-                  <div className="text-gray-500">{num}</div>
-                  <div className="font-medium">{session.rollStats[num] || 0}</div>
+              {session.distribution.map((count, index) => (
+                <div key={index + 2} className="text-center">
+                  <div className="text-gray-500">{index + 2}</div>
+                  <div className="font-medium">{count}</div>
                 </div>
               ))}
             </div>

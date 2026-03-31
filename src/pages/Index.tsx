@@ -14,6 +14,7 @@ import { useSessionStorage } from "@/hooks/useSessionStorage";
 import { useDiceRoller } from "@/hooks/useDiceRoller";
 import { useTimers } from "@/hooks/useTimers";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import type { RandomType } from "@/types";
 
 const Index = () => {
   const [localAutoRollActive, setLocalAutoRollActive] = useState(false);
@@ -21,11 +22,11 @@ const Index = () => {
   const [tempInputValue, setTempInputValue] = useState('120'); 
   const [sessionActive, setSessionActive] = useState(false); 
   const [playerCount, setPlayerCount] = useState(4); 
-  const [randomType, setRandomType] = useState<'standard' | 'visual' | 'crypto' | 'uniform' | 'weightedRandom'>('standard'); 
+  const [randomType, setRandomType] = useState<RandomType>('standard'); 
 
   const { sessionTime, rollIntervalTime, resetRollTimer } = useTimers(sessionActive, localAutoRollInterval, localAutoRollActive);
   const { muted, setMuted, playRollSound, stopAllSounds, stopCountdown, playCountdownSound } = useSoundEffects(); 
-  const { getSavedSessions, saveSession } = useSessionStorage(); 
+  const { getSavedSessions, saveSession, clearSavedSessions } = useSessionStorage(); 
 
   const { 
     rollStats, 
@@ -37,7 +38,7 @@ const Index = () => {
     redo, 
     canUndo, 
     canRedo 
-  } = useDiceRoller(resetRollTimer, sessionActive, playerCount, randomType, () => {});
+  } = useDiceRoller(resetRollTimer, playerCount, randomType);
   
   const [lastRoll, setLastRoll] = useState<{ dice1: number; dice2: number; total: number } | null>(() => {
     const d1 = Math.floor(Math.random() * 6) + 1;
@@ -47,6 +48,7 @@ const Index = () => {
 
   const [showHistory, setShowHistory] = useState(false);
   const [showRandomInfo, setShowRandomInfo] = useState(false);
+  const [historySessions, setHistorySessions] = useState(() => getSavedSessions());
 
   const handleRoll = useCallback((isSessionMode: boolean) => {
     const result = isSessionMode ? rollDiceForSession() : rollDiceFree();
@@ -60,10 +62,21 @@ const Index = () => {
   const handleStopSession = () => {
     if (rollStats && rollStats.totalRolls > 0) {
       saveSession({ sessionTime, rollStats, playerCount, randomType });
+      setHistorySessions(getSavedSessions());
     }
     setSessionActive(false);
     setLocalAutoRollActive(false);
     stopAllSounds(); 
+  };
+
+  const handleOpenHistory = () => {
+    setHistorySessions(getSavedSessions());
+    setShowHistory(true);
+  };
+
+  const handleClearHistory = () => {
+    clearSavedSessions();
+    setHistorySessions([]);
   };
 
   const remaining = localAutoRollInterval - rollIntervalTime;
@@ -101,20 +114,21 @@ const Index = () => {
             </SelectContent>
           </Select>
 
-          <Select value={randomType} onValueChange={(v: any) => setRandomType(v)}>
+          <Select value={randomType} onValueChange={(value) => setRandomType(value as RandomType)}>
             <SelectTrigger className="h-9 text-[12px] flex-1 bg-white border-slate-300 font-bold focus:ring-0"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="standard">Standard</SelectItem>
-              <SelectItem value="visual">Visual Fair</SelectItem>
+              <SelectItem value="weighted">Weighted</SelectItem>
               <SelectItem value="crypto">Crypto</SelectItem>
+              <SelectItem value="visual">Visual Fair</SelectItem>
               <SelectItem value="uniform">Uniform</SelectItem>
-              <SelectItem value="weightedRandom">Weighted</SelectItem>
+              <SelectItem value="without7">Without 7</SelectItem>
             </SelectContent>
           </Select>
 
           <div className="flex gap-1">
             <Button variant="outline" size="icon" className="h-9 w-9 border-slate-300" onClick={() => setShowRandomInfo(true)}><Info size={16}/></Button>
-            <Button variant="outline" size="icon" className="h-9 w-9 border-slate-300" onClick={() => setShowHistory(true)}><History size={16}/></Button>
+            <Button variant="outline" size="icon" className="h-9 w-9 border-slate-300" onClick={handleOpenHistory}><History size={16}/></Button>
             <Button variant="outline" size="icon" className="h-9 w-9 border-slate-300" onClick={() => setMuted(!muted)}>{muted ? <VolumeX size={16}/> : <Volume2 size={16}/>}</Button>
           </div>
         </div>
@@ -251,10 +265,22 @@ const Index = () => {
           <div className="relative bg-white w-full max-w-sm max-h-[70vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden border-4 border-slate-100">
             <div className="flex justify-between items-center p-6 border-b shrink-0 bg-slate-50">
               <h2 className="text-xl font-black uppercase italic text-slate-700">History</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowHistory(false)}><X size={28}/></Button>
+              <div className="flex items-center gap-2">
+                {historySessions.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-slate-300 text-slate-600"
+                    onClick={handleClearHistory}
+                  >
+                    Clear
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" onClick={() => setShowHistory(false)}><X size={28}/></Button>
+              </div>
             </div>
             <div className="flex-1 overflow-auto p-4">
-              <SessionHistory sessions={getSavedSessions()} />
+              <SessionHistory sessions={historySessions} />
             </div>
           </div>
         </div>

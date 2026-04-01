@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import type { RandomType, SavedSession } from '@/types';
+import { getAnonymousUserId } from '@/lib/sessionSync';
 
 type SessionPayload = {
   sessionTime: number;
@@ -31,6 +32,7 @@ export const useSessionStorage = () => {
     (sessionData: SessionPayload) => {
       const session: SavedSession = {
         id: Date.now().toString(),
+        userId: getAnonymousUserId(),
         timestamp: Date.now(),
         duration: sessionData.sessionTime,
         totalRolls: sessionData.rollStats.totalRolls,
@@ -52,6 +54,7 @@ export const useSessionStorage = () => {
       }
 
       localStorage.setItem('catan-dice-sessions', JSON.stringify(updatedSessions));
+      return session;
     },
     [getSavedSessions],
   );

@@ -25,8 +25,9 @@ export const PrivacyPolicy: React.FC = () => {
       <div className="space-y-2">
         <p className="font-medium text-gray-900">Server-side analytics</p>
         <p>
-          Session statistics may later be sent to a server for anonymous analytics. Personal
-          identity information is not required for the current app flow.
+          Session statistics may be sent to a server for anonymous analytics. The app can generate
+          an anonymous local user ID so multiple sessions from the same installation can be grouped
+          together without requiring sign-in.
         </p>
       </div>
 

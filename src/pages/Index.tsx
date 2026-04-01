@@ -15,6 +15,7 @@ import { useSessionStorage } from "@/hooks/useSessionStorage";
 import { useDiceRoller } from "@/hooks/useDiceRoller";
 import { useTimers } from "@/hooks/useTimers";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { enqueuePendingSession, flushPendingSessions } from "@/lib/sessionSync";
 import type { RandomType } from "@/types";
 
 const Index = () => {
@@ -65,7 +66,7 @@ const Index = () => {
 
   const handleStopSession = () => {
     if (rollStats && rollStats.totalRolls > 0) {
-      saveSession({
+      const savedSession = saveSession({
         sessionTime,
         rollStats,
         playerCount,
@@ -75,6 +76,8 @@ const Index = () => {
         autoRollIntervalSeconds: localAutoRollInterval,
         randomTypeChanged: sessionStartedRandomType !== randomType,
       });
+      enqueuePendingSession(savedSession);
+      void flushPendingSessions();
       setHistorySessions(getSavedSessions());
     }
     setSessionActive(false);
@@ -103,6 +106,20 @@ const Index = () => {
       stopAllSounds();
     }
   }, [remaining, localAutoRollActive, sessionActive, muted, handleRoll, stopAllSounds, playCountdownSound]);
+
+  useEffect(() => {
+    void flushPendingSessions();
+
+    const handleOnline = () => {
+      void flushPendingSessions();
+    };
+
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(Math.max(0, seconds) / 60);

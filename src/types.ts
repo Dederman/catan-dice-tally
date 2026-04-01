@@ -8,6 +8,7 @@ export type RandomType =
 
 export type SavedSession = {
   id: string;
+  userId: string;
   timestamp: number;
   duration: number;
   totalRolls: number;

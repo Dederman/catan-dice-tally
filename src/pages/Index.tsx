@@ -138,7 +138,7 @@ const Index = () => {
               <span className="flex items-center justify-center w-full">{playerCount} P</span>
             </SelectTrigger>
             <SelectContent>
-              {[2,3,4,5,6,7,8,9].map(n => (
+              {[2,3,4,5,6].map(n => (
                 <SelectItem key={n} value={n.toString()}>{n} Players</SelectItem>
               ))}
             </SelectContent>
@@ -220,6 +220,25 @@ const Index = () => {
       <div className="shrink-0 h-32 mt-1 z-10 pt-4">
         <StatisticsChart rollStats={rollStats} />
       </div>
+
+      {sessionActive && (
+        <div className="shrink-0 mt-2 z-10">
+          <div className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm">
+            <div className="mb-1 text-right text-[9px] font-black tracking-[0.16em] text-slate-400">
+              7s by player
+            </div>
+            <div className="overflow-x-auto">
+              <div className="flex min-w-max items-center gap-3 text-[13px] font-bold text-slate-500">
+                {Array.from({ length: playerCount }, (_, index) => (
+                  <span key={index} className="shrink-0 whitespace-nowrap">
+                    P{index + 1}: <span className="text-red-500">{rollStats.sevensByPlayer[index] ?? 0}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 flex flex-col items-center justify-between py-1 px-4 z-10">
         <div className={`text-4xl font-black tabular-nums transition-all duration-300 ${isUrgent ? 'text-red-600 animate-pulse scale-110' : 'text-slate-800'}`}>

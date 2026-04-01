@@ -106,9 +106,9 @@ const Index = () => {
       if (remaining <= 10 && remaining > 0 && !muted) playCountdownSound();
       if (remaining <= 0) handleRoll(true);
     } else {
-      stopAllSounds();
+      stopCountdown();
     }
-  }, [remaining, localAutoRollActive, sessionActive, muted, handleRoll, stopAllSounds, playCountdownSound]);
+  }, [remaining, localAutoRollActive, sessionActive, muted, handleRoll, stopCountdown, playCountdownSound]);
 
   useEffect(() => {
     void flushPendingSessions();

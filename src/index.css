@@ -103,4 +103,30 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     touch-action: manipulation;
   }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+}
+
+@layer utilities {
+  .app-safe-shell {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+  }
+
+  .safe-modal-pad {
+    padding-top: max(1.5rem, calc(env(safe-area-inset-top) + 1rem));
+    padding-right: max(1.5rem, calc(env(safe-area-inset-right) + 1rem));
+    padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem));
+    padding-left: max(1.5rem, calc(env(safe-area-inset-left) + 1rem));
+  }
+
+  .safe-bottom-space {
+    padding-bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem));
+  }
 }

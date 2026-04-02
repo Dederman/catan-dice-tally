@@ -19,6 +19,9 @@ import { enqueuePendingSession, flushPendingSessions } from "@/lib/sessionSync";
 import type { RandomType } from "@/types";
 
 const Index = () => {
+  const [viewportHeight, setViewportHeight] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight : 900
+  );
   const [localAutoRollActive, setLocalAutoRollActive] = useState(false);
   const [localAutoRollInterval, setLocalAutoRollInterval] = useState(120); 
   const [tempInputValue, setTempInputValue] = useState('120'); 
@@ -111,6 +114,18 @@ const Index = () => {
   }, [remaining, localAutoRollActive, sessionActive, muted, handleRoll, stopCountdown, playCountdownSound]);
 
   useEffect(() => {
+    const handleResize = () => {
+      setViewportHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
     void flushPendingSessions();
 
     const handleOnline = () => {
@@ -130,11 +145,15 @@ const Index = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const isCompactScreen = viewportHeight <= 820;
+  const isVeryCompactScreen = viewportHeight <= 700;
+  const diceSize = isVeryCompactScreen ? 76 : isCompactScreen ? 92 : 122;
+
   return (
-    <div className="app-safe-shell h-screen w-full flex flex-col bg-white overflow-hidden select-none text-slate-800 relative">
+    <div className="app-safe-shell compact-scroll-shell h-screen w-full flex flex-col bg-white overflow-hidden select-none text-slate-800 relative">
       
       {/* ПАНЕЛЬ НАСТРОЕК */}
-      <div className="mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm shrink-0 z-10">
+      <div className="compact-top-panel mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm shrink-0 z-10">
         <div className="flex items-center gap-1.5 mb-2.5">
           <Select value={playerCount.toString()} onValueChange={(v) => setPlayerCount(parseInt(v))}>
             <SelectTrigger className="h-9 text-[13px] w-16 bg-white border-slate-300 font-bold focus:ring-0">
@@ -220,11 +239,11 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="shrink-0 h-32 mt-1 z-10 pt-4">
+      <div className="compact-chart shrink-0 h-32 mt-1 z-10 pt-4">
         <StatisticsChart rollStats={rollStats} />
       </div>
 
-      <div className="shrink-0 mt-2 z-10">
+      <div className="compact-seven-stats shrink-0 mt-2 z-10">
         <div className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-sm">
           <div className="mb-1 text-right text-[9px] font-black tracking-[0.16em] text-slate-400">
             7s by player
@@ -241,23 +260,23 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-between py-1 px-4 z-10">
-        <div className={`text-4xl font-black tabular-nums transition-all duration-300 ${isUrgent ? 'text-red-600 animate-pulse scale-110' : 'text-slate-800'}`}>
+      <div className={`compact-main-stack flex-1 flex flex-col items-center px-4 z-10 ${isVeryCompactScreen ? 'justify-start gap-2 py-1.5' : isCompactScreen ? 'justify-start gap-3 py-2' : 'justify-between py-1'}`}>
+        <div className={`${isVeryCompactScreen ? 'text-[2.6rem]' : isCompactScreen ? 'text-3xl' : 'text-4xl'} compact-timer font-black tabular-nums transition-all duration-300 ${isUrgent ? 'text-red-600 animate-pulse scale-110' : 'text-slate-800'}`}>
           {localAutoRollActive ? formatTime(remaining) : formatTime(rollIntervalTime)}
         </div>
         
-        <div className="scale-[1.9] drop-shadow-xl my-2">
-          {lastRoll && <DiceDisplay dice1={lastRoll.dice1} dice2={lastRoll.dice2} />}
+        <div className={`compact-dice drop-shadow-xl ${isVeryCompactScreen ? 'mt-0.5 mb-1.5' : isCompactScreen ? 'mt-1 mb-2' : 'my-2'}`}>
+          {lastRoll && <DiceDisplay dice1={lastRoll.dice1} dice2={lastRoll.dice2} size={diceSize} />}
         </div>
 
-        <div className="bg-white px-8 py-1 rounded-2xl text-xl font-black border-2 border-emerald-500 text-emerald-600 shadow-lg shrink-0">
+        <div className={`compact-result bg-white rounded-2xl border-2 border-emerald-500 text-emerald-600 shadow-lg shrink-0 font-black ${isVeryCompactScreen ? 'mt-0.5 px-4 py-0.5 text-base' : isCompactScreen ? 'mt-1 px-5 py-1 text-lg' : 'px-8 py-1 text-xl'}`}>
            RESULT: {lastRoll?.total || 0}
         </div>
 
-        <div className="safe-bottom-space w-full space-y-2 flex flex-col items-center">
-          <div className="h-14 flex items-center justify-center w-full">
+        <div className={`safe-bottom-space w-full flex flex-col items-center ${isVeryCompactScreen ? 'pt-0 space-y-0.5' : isCompactScreen ? 'pt-0.5 space-y-1' : 'space-y-2'}`}>
+          <div className={`compact-player-row flex items-center justify-center w-full ${sessionActive ? (isVeryCompactScreen ? 'h-10' : isCompactScreen ? 'h-12' : 'h-14') : 'h-0'}`}>
             {sessionActive && (
-              <div className="flex items-center justify-center gap-10">
+              <div className={`compact-player-controls flex items-center justify-center ${isVeryCompactScreen ? 'gap-4' : isCompactScreen ? 'gap-6' : 'gap-10'}`}>
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -272,10 +291,10 @@ const Index = () => {
                 </Button>
 
                 <div className="flex flex-col items-center justify-center leading-none">
-                  <span className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase mb-1">
+                  <span className="compact-next-label text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase mb-1">
                     Next Player
                   </span>
-                  <div className="text-4xl font-black text-orange-500 w-12 text-center">{currentPlayer}</div>
+                  <div className={`${isVeryCompactScreen ? 'text-[1.7rem]' : isCompactScreen ? 'text-3xl' : 'text-4xl'} compact-next-number font-black text-orange-500 w-12 text-center`}>{currentPlayer}</div>
                 </div>
 
                 <Button 
@@ -296,9 +315,9 @@ const Index = () => {
           
           <Button 
             onClick={() => handleRoll(sessionActive)} 
-            className="w-full h-28 bg-gradient-to-br from-orange-500 via-orange-600 to-red-700 shadow-[0_8px_0_rgb(153,44,14)] rounded-[2.5rem] active:translate-y-[6px] active:shadow-none transition-all"
+            className={`compact-roll-button w-full bg-gradient-to-br from-orange-500 via-orange-600 to-red-700 shadow-[0_8px_0_rgb(153,44,14)] active:translate-y-[6px] active:shadow-none transition-all ${isVeryCompactScreen ? 'h-[4.75rem] rounded-[1.75rem]' : isCompactScreen ? 'h-[5.5rem] rounded-[2rem]' : 'h-28 rounded-[2.5rem]'}`}
           >
-            <span className="text-white text-6xl font-black uppercase tracking-tighter">ROLL</span>
+            <span className={`compact-roll-text text-white font-black uppercase tracking-tighter ${isVeryCompactScreen ? 'text-[2.5rem]' : isCompactScreen ? 'text-[3rem]' : 'text-6xl'}`}>ROLL</span>
           </Button>
         </div>
       </div>

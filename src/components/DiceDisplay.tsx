@@ -4,9 +4,14 @@ import React from 'react';
 interface DiceDisplayProps {
   dice1: number;
   dice2: number;
+  size?: number;
 }
 
-export const DiceDisplay: React.FC<DiceDisplayProps> = ({ dice1, dice2 }) => {
+export const DiceDisplay: React.FC<DiceDisplayProps> = ({ dice1, dice2, size = 64 }) => {
+  const dotSize = Math.max(6, Math.round(size * 0.125));
+  const inset = Math.max(4, Math.round(size * 0.1));
+  const gap = Math.max(12, Math.round(size * 0.25));
+
   const renderDice = (value: number) => {
     const getDotPositions = (num: number) => {
       switch (num) {
@@ -30,12 +35,16 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ dice1, dice2 }) => {
     const dots = getDotPositions(value);
     
     return (
-      <div className="w-16 h-16 bg-white border-2 border-gray-800 rounded-lg relative shadow-lg">
-        <div className="absolute inset-1 grid grid-cols-3 grid-rows-3">
+      <div
+        className="relative rounded-lg border-2 border-gray-800 bg-white shadow-lg"
+        style={{ width: size, height: size }}
+      >
+        <div className="absolute grid grid-cols-3 grid-rows-3" style={{ inset }}>
           {dots.map((position, index) => (
             <div
               key={index}
-              className={`w-2 h-2 bg-gray-800 rounded-full ${getPositionClass(position)}`}
+              className={`rounded-full bg-gray-800 ${getPositionClass(position)}`}
+              style={{ width: dotSize, height: dotSize }}
             />
           ))}
         </div>
@@ -65,7 +74,7 @@ export const DiceDisplay: React.FC<DiceDisplayProps> = ({ dice1, dice2 }) => {
   };
 
   return (
-    <div className="flex space-x-4">
+    <div className="flex items-center justify-center" style={{ gap }}>
       {renderDice(dice1)}
       {renderDice(dice2)}
     </div>

@@ -131,7 +131,7 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col bg-white overflow-hidden select-none px-2 text-slate-800 relative">
+    <div className="app-safe-shell h-screen w-full flex flex-col bg-white overflow-hidden select-none text-slate-800 relative">
       
       {/* ПАНЕЛЬ НАСТРОЕК */}
       <div className="mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl shadow-sm shrink-0 z-10">
@@ -254,7 +254,7 @@ const Index = () => {
            RESULT: {lastRoll?.total || 0}
         </div>
 
-        <div className="w-full space-y-2 pb-4 flex flex-col items-center">
+        <div className="safe-bottom-space w-full space-y-2 flex flex-col items-center">
           <div className="h-14 flex items-center justify-center w-full">
             {sessionActive && (
               <div className="flex items-center justify-center gap-10">
@@ -304,16 +304,15 @@ const Index = () => {
       </div>
 
       {showRandomInfo && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="safe-modal-pad fixed inset-0 z-[100] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowRandomInfo(false)} />
           <div className="relative bg-white w-full max-w-sm max-h-[70vh] rounded-[1.4rem] shadow-2xl flex flex-col overflow-hidden border-4 border-slate-100">
             <div className="flex justify-between items-center p-6 border-b shrink-0 bg-slate-50">
-              <h2 className="text-xl font-black uppercase italic text-slate-700">Algorithms</h2>
+              <h2 className="text-xl font-black uppercase text-slate-700">Info</h2>
               <Button variant="ghost" size="icon" onClick={() => setShowRandomInfo(false)}><X size={28}/></Button>
             </div>
             <div className="flex-1 overflow-auto p-6 text-slate-600">
-              <RandomTypeInfo />
-              <div className="mt-6 border-t border-slate-200 pt-4">
+              <div className="mb-5 border-b border-slate-200 pb-4">
                 <Button
                   variant="link"
                   className="h-auto px-0 text-sm font-semibold text-slate-600"
@@ -322,17 +321,18 @@ const Index = () => {
                   Privacy Policy
                 </Button>
               </div>
+              <RandomTypeInfo />
             </div>
           </div>
         </div>
       )}
 
       {showPrivacyPolicy && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+        <div className="safe-modal-pad fixed inset-0 z-[110] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/55 backdrop-blur-sm" onClick={() => setShowPrivacyPolicy(false)} />
           <div className="relative bg-white w-full max-w-sm max-h-[70vh] rounded-[1.4rem] shadow-2xl flex flex-col overflow-hidden border-4 border-slate-100">
             <div className="flex justify-between items-center p-6 border-b shrink-0 bg-slate-50">
-              <h2 className="text-xl font-black uppercase italic text-slate-700">Privacy Policy</h2>
+              <h2 className="text-xl font-black uppercase text-slate-700">Privacy Policy</h2>
               <Button variant="ghost" size="icon" onClick={() => setShowPrivacyPolicy(false)}><X size={28}/></Button>
             </div>
             <div className="flex-1 overflow-auto p-6 text-slate-600">
@@ -343,11 +343,11 @@ const Index = () => {
       )}
 
       {showHistory && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="safe-modal-pad fixed inset-0 z-[100] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowHistory(false)} />
           <div className="relative bg-white w-full max-w-sm max-h-[70vh] rounded-[1.4rem] shadow-2xl flex flex-col overflow-hidden border-4 border-slate-100">
             <div className="flex justify-between items-center p-6 border-b shrink-0 bg-slate-50">
-              <h2 className="text-xl font-black uppercase italic text-slate-700">History</h2>
+              <h2 className="text-xl font-black uppercase text-slate-700">History</h2>
               <div className="flex items-center gap-2">
                 {historySessions.length > 0 && (
                   confirmClearHistory ? (
